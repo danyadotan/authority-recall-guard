@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software or its execution-hygiene framing, please cite this repository."
+title: "Execution Hygiene Agent"
+type: software
+authors:
+  - family-names: "Dotan"
+    given-names: "Danya"
+version: "0.1.0"
+date-released: "2026-09-19"
+repository-code: "https://github.com/danyadotan/execution-hygiene-agent"
+url: "https://tab-at-work.com"
+license: "MIT"
+abstract: >-
+  An open-source reference implementation of a reduction layer between verified
+  agent output and human attention. The primitive classifies already-verified
+  work into auto-pass, surface, require-approval, or escalate while preserving
+  explicit human authority boundaries.
+keywords:
+  - artificial intelligence
+  - agentic workflows
+  - execution reliability
+  - human-in-the-loop
+  - human attention
+  - governance

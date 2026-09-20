@@ -1,0 +1,56 @@
+{
+  "scenario": "10 agents produced 10 client documents from one approved baseline.",
+  "verifiedBeforeHygiene": true,
+  "artifacts": [
+    {
+      "id": "client-01",
+      "changeType": "approved_personalization",
+      "change": "Client name and account details updated."
+    },
+    {
+      "id": "client-02",
+      "changeType": "formatting_only",
+      "change": "Heading spacing adjusted."
+    },
+    {
+      "id": "client-03",
+      "changeType": "approved_personalization",
+      "change": "Date and contact details updated."
+    },
+    {
+      "id": "client-04",
+      "changeType": "non_material_style_change",
+      "change": "Sentence shortened without changing meaning."
+    },
+    {
+      "id": "client-05",
+      "changeType": "formatting_only",
+      "change": "Bullet formatting normalized."
+    },
+    {
+      "id": "client-06",
+      "changeType": "approved_personalization",
+      "change": "Client-specific product name inserted."
+    },
+    {
+      "id": "client-07",
+      "changeType": "non_material_style_change",
+      "change": "Approved wording variant used."
+    },
+    {
+      "id": "client-08",
+      "changeType": "formatting_only",
+      "change": "Footer layout adjusted."
+    },
+    {
+      "id": "client-09",
+      "changeType": "commercial_commitment",
+      "change": "Added a 4-hour response-time commitment."
+    },
+    {
+      "id": "client-10",
+      "changeType": "material_style_change",
+      "change": "Direct tone diverges from the approved client style."
+    }
+  ]
+}

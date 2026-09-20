@@ -1,0 +1,32 @@
+{
+  "summary": {
+    "artifactsReceived": 10,
+    "autoPassed": 8,
+    "surfaced": 1,
+    "requireApproval": 1,
+    "escalated": 0
+  },
+  "humanReviewSet": [
+    {
+      "id": "client-09",
+      "decision": "require_approval",
+      "reason": "Policy requires explicit human authority for this change type."
+    },
+    {
+      "id": "client-10",
+      "decision": "surface",
+      "reason": "The change is material enough to deserve human attention."
+    }
+  ],
+  "autoPassed": [
+    "client-01",
+    "client-02",
+    "client-03",
+    "client-04",
+    "client-05",
+    "client-06",
+    "client-07",
+    "client-08"
+  ],
+  "principle": "Eight documents require no re-reading. Two changes reach the human. Only one requires explicit authority."
+}

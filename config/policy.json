@@ -1,0 +1,30 @@
+{
+  "version": "0.1.0",
+  "principle": "Reduce human attention without reducing human authority.",
+  "autoPass": [
+    "formatting_only",
+    "approved_personalization",
+    "non_material_style_change"
+  ],
+  "surface": [
+    "material_style_change",
+    "unusual_change",
+    "policy_exception"
+  ],
+  "requireHumanApproval": [
+    "commercial_commitment",
+    "legal_change",
+    "permission_change",
+    "financial_commitment"
+  ],
+  "escalate": [
+    "missing_evidence",
+    "conflicting_policy",
+    "unresolved_risk"
+  ],
+  "invariants": {
+    "requiredApprovalCanNeverBeSuppressed": true,
+    "everyDecisionMustHaveReason": true,
+    "autoPassedItemsRemainTraceable": true
+  }
+}
