@@ -1,6 +1,6 @@
 # Contributing
 
-Execution Hygiene Agent is intentionally small. Contributions should make the decision boundary clearer, safer, or easier to reuse without turning this repository into the full TAB@Work orchestration system.
+Authority Recall Guard (a fork of Execution Hygiene Agent) is intentionally small. Contributions should make the decision boundary clearer, safer, or easier to reuse without turning this repository into the full TAB@Work orchestration system.
 
 ## Before opening a pull request
 
@@ -21,6 +21,8 @@ Changes must preserve these behaviors:
 4. Unknown change types fail safe to escalation.
 5. Attention reduction must never create or expand authority.
 6. Hygiene consumes already-verified work; upstream verification is outside this primitive.
+7. Retrieved evidence can only raise severity; `auto_pass` requires a declared `changeType` that policy also auto-passes.
+8. `config/policy.json` and `src/evidence.ts` must agree on every change type (enforced by tests).
 
 ## Good contribution areas
 

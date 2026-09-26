@@ -16,3 +16,26 @@ test("weak or absent evidence fails closed", () => {
   ]});
   assert.equal(result.decision, "escalate");
 });
+
+test("empty evidence fails closed", () => {
+  const result = decideFromEvidence({ query: "x", latencyMs: 1, evidence: [] });
+  assert.equal(result.decision, "escalate");
+  assert.deepEqual(result.matched, []);
+});
+
+test("evidence exactly at the threshold counts as strong", () => {
+  const result = decideFromEvidence({ query: "x", latencyMs: 1, evidence: [
+    { id: "surface", text: "s", score: .45, decision: "surface", source: "test" },
+  ]}, .45);
+  assert.equal(result.decision, "surface");
+});
+
+test("escalate evidence wins over surface and auto_pass", () => {
+  const result = decideFromEvidence({ query: "x", latencyMs: 1, evidence: [
+    { id: "pass", text: "p", score: .9, decision: "auto_pass", source: "test" },
+    { id: "surface", text: "s", score: .8, decision: "surface", source: "test" },
+    { id: "missing", text: "m", score: .5, decision: "escalate", source: "test" },
+  ]});
+  assert.equal(result.decision, "escalate");
+  assert.deepEqual(result.matched, ["pass", "surface", "missing"]);
+});

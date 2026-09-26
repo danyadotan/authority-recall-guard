@@ -1,40 +1,60 @@
 import { performance } from "node:perf_hooks";
 import { MossClient, type DocumentInfo } from "@moss-js/moss";
 
-export type AuthorityEvidence = {
-  id: string;
-  text: string;
-  decision: "auto_pass" | "surface" | "require_approval" | "escalate";
-  source: string;
-};
+import { AUTHORITY_EVIDENCE, evidenceVersion, type AuthorityEvidence } from "./evidence.ts";
+import type { Decision } from "./hygiene.ts";
+
+export { AUTHORITY_EVIDENCE, type AuthorityEvidence } from "./evidence.ts";
+
+export type RetrievedEvidence = Omit<AuthorityEvidence, "changeTypes"> & { score: number };
 
 export type RetrievalResult = {
   query: string;
   latencyMs: number;
-  evidence: Array<AuthorityEvidence & { score: number }>;
+  indexName?: string;
+  evidence: RetrievedEvidence[];
 };
 
-export const AUTHORITY_EVIDENCE: AuthorityEvidence[] = [
-  { id: "approval-commercial", text: "Commercial commitments, pricing changes, service-level promises, and contractual terms require explicit human approval.", decision: "require_approval", source: "authority-policy" },
-  { id: "approval-financial", text: "Payments, purchases, credits, refunds, and financial commitments require explicit human approval.", decision: "require_approval", source: "authority-policy" },
-  { id: "approval-permission", text: "Changing access, recipients, permissions, or disclosure scope requires explicit human approval.", decision: "require_approval", source: "authority-policy" },
-  { id: "escalate-missing", text: "Missing evidence, conflicting policy, unresolved identity, or unclear authority must escalate rather than be guessed.", decision: "escalate", source: "authority-policy" },
-  { id: "surface-material", text: "Material style changes and unusual but reversible changes should be surfaced for human attention.", decision: "surface", source: "attention-policy" },
-  { id: "pass-formatting", text: "Formatting-only changes that preserve meaning and audience can pass without human rereading when already verified.", decision: "auto_pass", source: "attention-policy" },
-  { id: "pass-approved-personalization", text: "Approved personalization within an existing audience and explicit policy can pass while remaining traceable.", decision: "auto_pass", source: "attention-policy" },
-];
+export type EvidenceDecision = {
+  decision: Decision;
+  reason: string;
+  matched: string[];
+};
+
+export type MossLike = {
+  listIndexes(): Promise<Array<{ name: string }>>;
+  createIndex(indexName: string, docs: DocumentInfo[], options?: { modelId?: string }): Promise<unknown>;
+  loadIndex(indexName: string): Promise<unknown>;
+  query(
+    indexName: string,
+    query: string,
+    options?: { topK?: number; alpha?: number }
+  ): Promise<{ docs: Array<{ id: string; text: string; score: number; metadata?: Record<string, string> }> }>;
+};
+
+const DECISIONS: readonly Decision[] = ["auto_pass", "surface", "require_approval", "escalate"];
+
+export function isDecision(value: unknown): value is Decision {
+  return typeof value === "string" && (DECISIONS as readonly string[]).includes(value);
+}
 
 export class MossAuthorityRetriever {
-  private client: MossClient;
-  private indexName: string;
+  readonly indexName: string;
+  private client: MossLike;
+  private evidence: AuthorityEvidence[];
 
-  constructor(projectId: string, projectKey: string, indexName = "authority-recall-guard") {
-    this.client = new MossClient(projectId, projectKey);
-    this.indexName = indexName;
+  constructor(client: MossLike, options: { indexPrefix?: string; evidence?: AuthorityEvidence[] } = {}) {
+    this.client = client;
+    this.evidence = options.evidence ?? AUTHORITY_EVIDENCE;
+    this.indexName = `${options.indexPrefix ?? "authority-recall-guard"}-${evidenceVersion(this.evidence)}`;
+  }
+
+  static fromCredentials(projectId: string, projectKey: string): MossAuthorityRetriever {
+    return new MossAuthorityRetriever(new MossClient(projectId, projectKey));
   }
 
   async initialize(): Promise<void> {
-    const documents: DocumentInfo[] = AUTHORITY_EVIDENCE.map(({ id, text, decision, source }) => ({
+    const documents: DocumentInfo[] = this.evidence.map(({ id, text, decision, source }) => ({
       id, text, metadata: { decision, source },
     }));
     const indexes = await this.client.listIndexes();
@@ -51,24 +71,31 @@ export class MossAuthorityRetriever {
     return {
       query,
       latencyMs,
-      evidence: result.docs.map((doc) => ({
-        id: doc.id,
-        text: doc.text,
-        score: doc.score,
-        decision: (doc.metadata?.decision as AuthorityEvidence["decision"]) ?? "escalate",
-        source: (doc.metadata?.source as string) ?? "unknown",
-      })),
+      indexName: this.indexName,
+      evidence: result.docs.map((doc) => {
+        const decision = doc.metadata?.decision;
+        return {
+          id: doc.id,
+          text: doc.text,
+          score: doc.score,
+          decision: isDecision(decision) ? decision : "escalate",
+          source: doc.metadata?.source ?? "unknown",
+        };
+      }),
     };
   }
 }
 
-export function decideFromEvidence(result: RetrievalResult, minimumScore = 0.45) {
+export const DEFAULT_MINIMUM_SCORE = 0.45;
+
+export function decideFromEvidence(result: RetrievalResult, minimumScore = DEFAULT_MINIMUM_SCORE): EvidenceDecision {
   const strong = result.evidence.filter((item) => item.score >= minimumScore);
-  if (strong.length === 0) return { decision: "escalate" as const, reason: "No authority evidence cleared the confidence threshold." };
+  const matched = strong.map((item) => item.id);
+  if (strong.length === 0) return { decision: "escalate", reason: "No authority evidence cleared the confidence threshold.", matched };
   const precedence = ["require_approval", "escalate", "surface", "auto_pass"] as const;
   for (const decision of precedence) {
     const hit = strong.find((item) => item.decision === decision);
-    if (hit) return { decision, reason: `Retrieved ${hit.id} from ${hit.source} (${hit.score.toFixed(3)}).` };
+    if (hit) return { decision, reason: `Retrieved ${hit.id} from ${hit.source} (${hit.score.toFixed(3)}).`, matched };
   }
-  return { decision: "escalate" as const, reason: "Retrieved evidence had no recognized decision." };
+  return { decision: "escalate", reason: "Retrieved evidence had no recognized decision.", matched };
 }
