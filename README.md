@@ -26,36 +26,69 @@ Proposed action:
 
 Expected result: Moss retrieves the commercial-commitment authority policy and the guard returns `require_approval`. An unrelated or low-confidence query returns `escalate`, never `auto_pass`.
 
+## How the gate decides
+
+1. Moss retrieves the top authority evidence for the proposed action.
+2. If a `changeType` is declared, the deterministic policy in `config/policy.json` classifies it too.
+3. The final decision is the **more severe** of the two. Retrieval alone never auto-passes: `auto_pass` requires a declared `changeType` that policy also auto-passes.
+
+The Moss index name includes a hash of the evidence (`authority-recall-guard-<policyVersion>`), so editing `src/evidence.ts` builds and loads a fresh index instead of serving stale policy.
+
 ## Run
 
-Requirements: Node.js 20.4+, a Moss project, and project credentials from https://portal.usemoss.dev.
+Requirements: Node.js 20.10+, a Moss project, and project credentials from https://portal.usemoss.dev.
 
 ```bash
 npm install
+npm run check          # typecheck + unit tests + deterministic demo (no credentials needed)
+
 cp .env.example .env
 # Fill MOSS_PROJECT_ID and MOSS_PROJECT_KEY locally. Never commit .env.
-export $(grep -v '^#' .env | xargs)
+set -a && . ./.env && set +a
 npm run demo:moss
-npm run check
-```
-
-Or pass a different proposed action:
-
-```bash
 npm run demo:moss -- "Change the recipient and share private customer notes"
+npm run demo:moss -- --change-type=formatting_only "Adjust heading spacing"
+npm run eval           # labelled retrieval eval + threshold sweep; fails if approval recall < 100%
 ```
+
+## MCP server
+
+`npm run mcp` starts a stdio MCP server that exposes one read-only tool, `check_action({ action, changeType? })`. Agents should call it before any side-effecting action and continue only on `auto_pass`.
+
+```json
+{
+  "mcpServers": {
+    "authority-recall-guard": {
+      "command": "npx",
+      "args": ["tsx", "/path/to/authority-recall-guard/src/mcp-server.ts"],
+      "env": { "MOSS_PROJECT_ID": "...", "MOSS_PROJECT_KEY": "..." }
+    }
+  }
+}
+```
+
+If the check fails, the tool returns an error that tells the agent to treat the action as `escalate`. The full trace for each decision is written to stderr as JSON.
+
+## HTTP API
+
+`POST /api/query` with `{ "query": "...", "changeType": "optional" }`. Set `GUARD_API_TOKEN` on the deployment to require `Authorization: Bearer <token>`.
 
 ## Output contract
 
 ```json
 {
-  "product": "Authority Recall Guard",
-  "retrieval": "Moss in-memory hybrid search",
+  "traceId": "4c1e...",
+  "timestamp": "2026-09-26T22:00:00.000Z",
+  "policyVersion": "a1b2c3d4e5f6",
+  "indexName": "authority-recall-guard-a1b2c3d4e5f6",
   "query": "...",
-  "latencyMs": 4.2,
-  "evidence": [{ "id": "...", "score": 0.81, "decision": "require_approval" }],
   "decision": "require_approval",
-  "reason": "Retrieved approval-commercial from authority-policy (0.810)."
+  "reason": "Retrieved approval-commercial from authority-policy (0.810).",
+  "retrievalDecision": "require_approval",
+  "policyDecision": "auto_pass",
+  "matched": ["approval-commercial"],
+  "latencyMs": 4.2,
+  "evidence": [{ "id": "approval-commercial", "score": 0.81, "decision": "require_approval", "source": "authority-policy" }]
 }
 ```
 

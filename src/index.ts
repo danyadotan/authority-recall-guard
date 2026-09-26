@@ -67,7 +67,7 @@ const humanReviewSet = results.filter(
     result.decision === "escalate"
 );
 
-console.log("\nExecution Hygiene Agent\n");
+console.log("\nExecution Hygiene (deterministic baseline)\n");
 
 console.log(input.scenario);
 

@@ -1,13 +1,13 @@
 cff-version: 1.2.0
 message: "If you use this software or its execution-hygiene framing, please cite this repository."
-title: "Execution Hygiene Agent"
+title: "Authority Recall Guard"
 type: software
 authors:
   - family-names: "Dotan"
     given-names: "Danya"
-version: "0.1.0"
-date-released: "2026-09-19"
-repository-code: "https://github.com/danyadotan/execution-hygiene-agent"
+version: "0.3.0"
+date-released: "2026-09-26"
+repository-code: "https://github.com/danyadotan/authority-recall-guard"
 url: "https://tab-at-work.com"
 license: "MIT"
 abstract: >-

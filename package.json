@@ -1,6 +1,6 @@
 {
   "name": "authority-recall-guard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Moss-backed real-time retrieval of authority and permission evidence for safer AI agent execution.",
   "type": "module",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "url": "https://github.com/danyadotan/authority-recall-guard.git"
   },
   "bugs": {
-    "url": "https://github.com/danyadotan/execution-hygiene-agent/issues"
+    "url": "https://github.com/danyadotan/authority-recall-guard/issues"
   },
   "keywords": [
     "ai-agents",
@@ -20,10 +20,13 @@
     "execution-reliability",
     "human-attention",
     "governance",
-    "approval-boundaries"
+    "approval-boundaries",
+    "moss",
+    "retrieval",
+    "mcp"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=20.10"
   },
   "scripts": {
     "demo": "tsx src/index.ts",
@@ -31,7 +34,9 @@
     "check": "npm run typecheck && npm test && npm run demo",
     "demo:moss": "tsx src/moss-demo.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "start": "vercel dev"
+    "start": "vercel dev",
+    "eval": "tsx src/eval.ts",
+    "mcp": "tsx src/mcp-server.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
@@ -39,6 +44,8 @@
     "typescript": "^5.9.0"
   },
   "dependencies": {
-    "@moss-js/moss": "^1.12.0"
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@moss-js/moss": "^1.12.0",
+    "zod": "4.6.5"
   }
 }
