@@ -1,4 +1,4 @@
-import { MossAuthorityRetriever, decideFromEvidence } from "../src/retrieval.ts";
+import { MossAuthorityRetriever, decideFromEvidence } from "../src/retrieval.js";
 
 let retriever: MossAuthorityRetriever | undefined;
 let ready: Promise<void> | undefined;
