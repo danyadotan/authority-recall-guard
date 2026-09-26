@@ -34,7 +34,11 @@ test("index name is versioned by evidence content", async () => {
   assert.deepEqual(calls.loaded, [retriever.indexName]);
 
   const edited = AUTHORITY_EVIDENCE.map((item, index) => index === 0 ? { ...item, text: `${item.text} Edited.` } : item);
-  assert.notEqual(new MossAuthorityRetriever(client, { evidence: edited }).indexName, retriever.indexName);
+  const custom = new MossAuthorityRetriever(fakeClient([{ id: "pass-formatting", score: 0.9, decision: "auto_pass" }]).client, { evidence: edited });
+  assert.notEqual(custom.indexName, retriever.indexName);
+  const result = await checkAction({ action: "Adjust spacing", changeType: "formatting_only" }, custom);
+  assert.equal(result.policyVersion, custom.policyVersion);
+  assert.equal(result.indexName, `authority-recall-guard-${result.policyVersion}`);
 });
 
 test("existing versioned index is loaded, not recreated", async () => {

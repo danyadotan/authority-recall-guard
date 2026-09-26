@@ -40,13 +40,15 @@ export function isDecision(value: unknown): value is Decision {
 
 export class MossAuthorityRetriever {
   readonly indexName: string;
+  readonly policyVersion: string;
   private client: MossLike;
   private evidence: AuthorityEvidence[];
 
   constructor(client: MossLike, options: { indexPrefix?: string; evidence?: AuthorityEvidence[] } = {}) {
     this.client = client;
     this.evidence = options.evidence ?? AUTHORITY_EVIDENCE;
-    this.indexName = `${options.indexPrefix ?? "authority-recall-guard"}-${evidenceVersion(this.evidence)}`;
+    this.policyVersion = evidenceVersion(this.evidence);
+    this.indexName = `${options.indexPrefix ?? "authority-recall-guard"}-${this.policyVersion}`;
   }
 
   static fromCredentials(projectId: string, projectKey: string): MossAuthorityRetriever {

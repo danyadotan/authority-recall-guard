@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 
 import policyConfig from "../config/policy.json" with { type: "json" };
-import { evidenceVersion } from "./evidence.ts";
 import { classify, type Decision, type Policy } from "./hygiene.ts";
 import { decideFromEvidence, type MossAuthorityRetriever, type RetrievedEvidence } from "./retrieval.ts";
 
@@ -66,7 +65,7 @@ export async function checkAction(
   return {
     traceId: randomUUID(),
     timestamp: new Date().toISOString(),
-    policyVersion: evidenceVersion(),
+    policyVersion: retriever.policyVersion,
     indexName: result.indexName,
     query: input.action,
     changeType: input.changeType,
