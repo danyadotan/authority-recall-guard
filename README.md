@@ -1,8 +1,7 @@
 # Authority Recall Guard
 
 **Moss-backed, real-time retrieval of authority evidence for safer AI agent execution.**
-
-Authority Recall Guard extends Danya Dotan's [Execution Hygiene Agent] (https://github.com/danyadotan/execution-hygiene-agent) as a separate technical prototype. 
+Authority Recall Guard extends Danya Dotan's [Execution Hygiene Agent](https://github.com/danyadotan/execution-hygiene-agent) as a separate technical prototype. 
 It addresses one failure mode in AI-native work: an agent can remember the task while forgetting the permission, audience, or commitment boundary that determines whether it may act.
 
 The guard uses Moss as its retrieval layer. It indexes authority and attention policy, loads the index in memory, and retrieves the evidence relevant to a proposed action. A conservative gate then applies this precedence:
