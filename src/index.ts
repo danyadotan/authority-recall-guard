@@ -5,7 +5,7 @@ import {
   classify,
   type Artifact,
   type Policy,
-} from "./hygiene.ts";
+} from "./hygiene.js";
 
 type Input = {
   scenario: string;

@@ -2,8 +2,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-import { checkAction } from "./gate.ts";
-import { MossAuthorityRetriever } from "./retrieval.ts";
+import { checkAction } from "./gate.js";
+import { MossAuthorityRetriever } from "./retrieval.js";
 
 const projectId = process.env.MOSS_PROJECT_ID;
 const projectKey = process.env.MOSS_PROJECT_KEY;

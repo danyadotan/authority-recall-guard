@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 
 import policyConfig from "../config/policy.json" with { type: "json" };
-import { classify, type Decision, type Policy } from "./hygiene.ts";
-import { decideFromEvidence, type MossAuthorityRetriever, type RetrievedEvidence } from "./retrieval.ts";
+import { classify, type Decision, type Policy } from "./hygiene.js";
+import { decideFromEvidence, type MossAuthorityRetriever, type RetrievedEvidence } from "./retrieval.js";
 
 export type ActionCheck = {
   action: string;
