@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { checkAction } from "../src/gate.js";
 import { MossAuthorityRetriever } from "../src/retrieval.js";
 
@@ -11,6 +13,8 @@ type Response = {
   status(code: number): Response;
   json(body: unknown): Response;
 };
+
+if (process.env.VERCEL && !process.env.MOSS_MODEL_CACHE_DIR) process.env.MOSS_MODEL_CACHE_DIR = join(tmpdir(), "moss-models");
 
 let retriever: MossAuthorityRetriever | undefined;
 let ready: Promise<void> | undefined;
