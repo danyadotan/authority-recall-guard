@@ -1,5 +1,5 @@
-import { checkAction } from "./gate.ts";
-import { MossAuthorityRetriever } from "./retrieval.ts";
+import { checkAction } from "./gate.js";
+import { MossAuthorityRetriever } from "./retrieval.js";
 
 const projectId = process.env.MOSS_PROJECT_ID;
 const projectKey = process.env.MOSS_PROJECT_KEY;

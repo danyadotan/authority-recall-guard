@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { Decision } from "./hygiene.ts";
+import type { Decision } from "./hygiene.js";
 
 export type AuthorityEvidence = {
   id: string;

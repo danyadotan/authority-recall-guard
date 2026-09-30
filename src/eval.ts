@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { POLICY, combineDecisions } from "./gate.ts";
-import { classify, type Decision } from "./hygiene.ts";
-import { DEFAULT_MINIMUM_SCORE, MossAuthorityRetriever, decideFromEvidence, type RetrievalResult } from "./retrieval.ts";
+import { POLICY, combineDecisions } from "./gate.js";
+import { classify, type Decision } from "./hygiene.js";
+import { DEFAULT_MINIMUM_SCORE, MossAuthorityRetriever, decideFromEvidence, type RetrievalResult } from "./retrieval.js";
 
 type Case = { action: string; expected: Decision; changeType?: string };
 

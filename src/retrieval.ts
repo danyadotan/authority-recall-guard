@@ -1,10 +1,10 @@
 import { performance } from "node:perf_hooks";
 import { MossClient, type DocumentInfo } from "@moss-js/moss";
 
-import { AUTHORITY_EVIDENCE, evidenceVersion, type AuthorityEvidence } from "./evidence.ts";
-import type { Decision } from "./hygiene.ts";
+import { AUTHORITY_EVIDENCE, evidenceVersion, type AuthorityEvidence } from "./evidence.js";
+import type { Decision } from "./hygiene.js";
 
-export { AUTHORITY_EVIDENCE, type AuthorityEvidence } from "./evidence.ts";
+export { AUTHORITY_EVIDENCE, type AuthorityEvidence } from "./evidence.js";
 
 export type RetrievedEvidence = Omit<AuthorityEvidence, "changeTypes"> & { score: number };
 
