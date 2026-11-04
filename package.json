@@ -29,14 +29,15 @@
     "node": ">=20.10"
   },
   "scripts": {
-    "demo": "tsx src/index.ts",
-    "test": "tsx --test tests/*.test.ts",
+    "demo": "node --import tsx src/index.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
     "check": "npm run typecheck && npm test && npm run demo",
     "demo:moss": "tsx src/moss-demo.ts",
     "typecheck": "tsc -p tsconfig.json",
     "start": "vercel dev",
     "eval": "tsx src/eval.ts",
-    "mcp": "tsx src/mcp-server.ts"
+    "mcp": "tsx src/mcp-server.ts",
+    "demo:contract": "node --import tsx src/contract-demo.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
