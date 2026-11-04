@@ -12,6 +12,10 @@ require_approval > escalate > surface > auto_pass
 
 Weak or missing evidence fails closed to `escalate`. Every decision returns the evidence ID, source, similarity score, latency, and reason.
 
+## Challenge evidence and reproducibility
+
+See [the reviewer guide](CHALLENGE.md) for reproducible offline results, a mock tool-boundary demonstration, and an explicit known unsafe outcome. This is a prototype: advisory decisions alone do not enforce tool access. Live Moss retrieval was not verified in the November 2026 review.
+
 ## Why Moss
 
 This is a hot-path decision in conversational and multi-agent workflows. A network round trip for every policy lookup adds delay, while stale or missing context creates safety failures. Moss provides in-memory hybrid semantic and keyword retrieval after the index is loaded, designed for sub-10ms queries on supported hardware.
