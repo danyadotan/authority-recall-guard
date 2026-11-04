@@ -12,6 +12,38 @@ require_approval > escalate > surface > auto_pass
 
 Weak or missing evidence fails closed to `escalate`. Every decision returns the evidence ID, source, similarity score, latency, and reason.
 
+## Enforced contract-send scenario (November 2026)
+
+**The Moss gate is advisory. The new contract executor is an independently enforced,
+conservative boundary:** every contract send requires a trusted reviewer grant
+bound to the exact recipient, subject, body and policy version. Agent labels such
+as `formatting_only`, and even incorrect low-risk retrieval, cannot authorize a
+send. This intentionally trades automatic contract sending for a clear guarantee
+within a trusted host; it is not a semantic classifier for all irreversible actions.
+
+```bash
+npm ci
+npm run check
+npm run demo:contract -- /tmp/authority-contract-demo-new
+# Use a fresh empty directory. Inspect report.json and outbox/*.json there.
+```
+
+The demo blocks an unapproved contract, rejects changed body/recipient, sends
+exactly the reviewed payload to a **local file outbox**, verifies its digest and
+receipt, and blocks approval replay. It uses synthetic content and a simulated
+trusted reviewer, not real email or an authenticated human interface.
+
+Give an agent only the `agent` object returned by `createContractExecutor` in
+`src/contract-executor.ts`. Keep `reviewer`, transport credentials and the raw
+transport in the trusted host. This separation is an integration requirement,
+not OS isolation supplied by this library. The existing MCP/HTTP check tools
+remain advisory and do not automatically install this executor.
+
+See [the reviewer guide](CHALLENGE.md) for the threat model, 47 passing tests,
+reproduction commands, and explicit limits. The old advisory wrapper's known
+unsafe outcome remains tested as a counterexample. Live Moss retrieval has not
+been verified in this review.
+
 ## Why Moss
 
 This is a hot-path decision in conversational and multi-agent workflows. A network round trip for every policy lookup adds delay, while stale or missing context creates safety failures. Moss provides in-memory hybrid semantic and keyword retrieval after the index is loaded, designed for sub-10ms queries on supported hardware.
@@ -39,7 +71,7 @@ The Moss index name includes a hash of the evidence (`authority-recall-guard-<po
 Requirements: Node.js 20.10+, a Moss project, and project credentials from https://portal.usemoss.dev.
 
 ```bash
-npm install
+npm ci
 npm run check          # typecheck + unit tests + deterministic demo (no credentials needed)
 
 cp .env.example .env

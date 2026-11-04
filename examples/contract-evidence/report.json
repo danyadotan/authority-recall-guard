@@ -1,0 +1,49 @@
+{
+  "scenario": "synthetic contract send to local file outbox",
+  "blocked": [
+    "unapproved_disguised_contract",
+    "body_substitution",
+    "recipient_substitution",
+    "approval_replay"
+  ],
+  "deliveredCount": 1,
+  "exactReviewedPayloadDelivered": true,
+  "receiptDigestVerified": true,
+  "digest": "3122634a513cdffc0f14b73ca79479d0236b1d06f2a4dff0129f7f7c75be5bcc",
+  "approval": "simulated trusted reviewer; no human identity verification",
+  "transport": "local file; no external email",
+  "audit": [
+    {
+      "event": "blocked",
+      "digest": "3122634a513cdffc0f14b73ca79479d0236b1d06f2a4dff0129f7f7c75be5bcc"
+    },
+    {
+      "event": "reviewed",
+      "digest": "3122634a513cdffc0f14b73ca79479d0236b1d06f2a4dff0129f7f7c75be5bcc"
+    },
+    {
+      "event": "approved",
+      "digest": "3122634a513cdffc0f14b73ca79479d0236b1d06f2a4dff0129f7f7c75be5bcc"
+    },
+    {
+      "event": "blocked",
+      "digest": "d9212e10e19287358a784afcd7f615fa063d63ad86fcbc9f9596d244511664d5"
+    },
+    {
+      "event": "blocked",
+      "digest": "71d1b29934444213824cec63b21252271308dd7189d9974814cd8d91d7ed6860"
+    },
+    {
+      "event": "dispatch_started",
+      "digest": "3122634a513cdffc0f14b73ca79479d0236b1d06f2a4dff0129f7f7c75be5bcc"
+    },
+    {
+      "event": "confirmed",
+      "digest": "3122634a513cdffc0f14b73ca79479d0236b1d06f2a4dff0129f7f7c75be5bcc"
+    },
+    {
+      "event": "blocked",
+      "digest": "3122634a513cdffc0f14b73ca79479d0236b1d06f2a4dff0129f7f7c75be5bcc"
+    }
+  ]
+}
