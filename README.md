@@ -80,7 +80,8 @@ set -a && . ./.env && set +a
 npm run demo:moss
 npm run demo:moss -- "Change the recipient and share private customer notes"
 npm run demo:moss -- --change-type=formatting_only "Adjust heading spacing"
-npm run eval           # labelled retrieval eval + threshold sweep; fails if approval recall < 100%
+npm run eval           # live retrieval metrics, paired gate evaluation, alpha/threshold sweeps
+npm run benchmark:moss # separate index creation, fresh-process loads and warm p50/p95/p99
 ```
 
 ## MCP server
@@ -139,3 +140,5 @@ This prototype retrieves evidence. It does not authenticate a person, create per
 ## License
 
 MIT © 2026 Danya Dotan.
+
+See [evaluation methodology](docs/evaluation.md) for policy labels, missed approvals, cache isolation, and the distinction between live measurements and synthetic tests.

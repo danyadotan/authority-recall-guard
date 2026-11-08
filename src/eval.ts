@@ -1,58 +1,54 @@
 import fs from "node:fs";
-import path from "node:path";
+import { AUTHORITY_EVIDENCE } from "./evidence.js";
+import { DEFAULT_MINIMUM_SCORE, type RetrievalResult } from "./retrieval.js";
+import { evaluate, hasSafetyFailures, summarize, validateCases, type EvalCase } from "./eval-metrics.js";
+import { evalRetriever } from "./eval-moss.js";
 
-import { POLICY, combineDecisions } from "./gate.js";
-import { classify, type Decision } from "./hygiene.js";
-import { DEFAULT_MINIMUM_SCORE, MossAuthorityRetriever, decideFromEvidence, type RetrievalResult } from "./retrieval.js";
-
-type Case = { action: string; expected: Decision; changeType?: string };
-
-const projectId = process.env.MOSS_PROJECT_ID;
-const projectKey = process.env.MOSS_PROJECT_KEY;
-if (!projectId || !projectKey) throw new Error("Set MOSS_PROJECT_ID and MOSS_PROJECT_KEY.");
-
-const cases: Case[] = JSON.parse(
-  fs.readFileSync(path.join(process.cwd(), "examples", "eval", "queries.json"), "utf8")
-);
-
-const retriever = MossAuthorityRetriever.fromCredentials(projectId, projectKey);
-await retriever.initialize();
-
-const retrieved: Array<{ testCase: Case; result: RetrievalResult }> = [];
-for (const testCase of cases) {
-  retrieved.push({ testCase, result: await retriever.retrieve(testCase.action) });
-}
-
-function run(threshold: number) {
-  return retrieved.map(({ testCase, result }) => {
-    const policy = testCase.changeType
-      ? classify({ id: "eval", changeType: testCase.changeType, change: testCase.action }, POLICY)
-      : undefined;
-    const { decision } = combineDecisions(decideFromEvidence(result, threshold), policy);
-    return { ...testCase, decision, topScore: result.evidence[0]?.score ?? 0, latencyMs: result.latencyMs };
-  });
-}
-
-function summarize(rows: ReturnType<typeof run>) {
-  const approvals = rows.filter((row) => row.expected === "require_approval");
-  return {
-    accuracy: rows.filter((row) => row.decision === row.expected).length / rows.length,
-    approvalRecall: approvals.filter((row) => row.decision === "require_approval").length / approvals.length,
-    unsafeAutoPass: rows.filter((row) => row.decision === "auto_pass" && row.expected !== "auto_pass").length,
+async function main() {
+  const cases: EvalCase[] = JSON.parse(fs.readFileSync("examples/eval/queries.json", "utf8"));
+  validateCases(cases);
+  const runs = [];
+  // Query again for each alpha; reuse identical ranked results across thresholds and gate modes.
+  for (const alpha of [0, .65, .8, 1]) {
+    const { retriever, timings, close } = evalRetriever(alpha, process.env.MOSS_EVAL_CACHE_PATH);
+    try {
+      await retriever.initialize();
+      const retrieved: Array<{ c: EvalCase; result: RetrievalResult }> = [];
+      for (const c of cases) retrieved.push({ c, result: await retriever.retrieve(c.action) });
+      const thresholds = [.3, .35, .4, .45, .5, .55, .6, .7].map((threshold) => {
+        const rows = retrieved.map(({ c, result }) => evaluate(c, result, threshold));
+        return {
+          threshold, summary: summarize(rows),
+          byDeclaredChangeType: {
+            present: summarize(rows.filter((r) => r.changeType !== undefined)),
+            absent: summarize(rows.filter((r) => r.changeType === undefined)),
+          },
+          byWording: {
+            original: summarize(rows.filter((r) => r.kind === "original")),
+            paraphrase: summarize(rows.filter((r) => r.kind === "paraphrase")),
+          },
+          rows,
+        };
+      });
+      runs.push({ alpha, indexName: retriever.indexName, policyVersion: retriever.policyVersion, initialization: timings, thresholds });
+    } finally { await close(); }
+  }
+  const baseline = runs.find((r) => r.alpha === .65)!.thresholds.find((r) => r.threshold === DEFAULT_MINIMUM_SCORE)!;
+  const report = {
+    mode: "live-moss", sdkVersion: JSON.parse(fs.readFileSync("node_modules/@moss-js/moss/package.json", "utf8")).version,
+    nodeVersion: process.version, environment: "local-process", createdAt: new Date().toISOString(),
+    modelId: "moss-minilm", topK: 3, corpusSize: AUTHORITY_EVIDENCE.length, queryCount: cases.length,
+    note: "Synthetic small-corpus evaluation; latency here is diagnostic, not a warm-query benchmark. Sweeps are exploratory, not held-out validation.",
+    baselineSafetyPassed: !hasSafetyFailures(baseline.summary), runs,
   };
+  const json = JSON.stringify(report, null, 2);
+  const output = process.argv[2];
+  if (output) fs.writeFileSync(output, json + "\n");
+  else console.log(json);
+  if (hasSafetyFailures(baseline.summary)) process.exitCode = 1;
 }
-
-const rows = run(DEFAULT_MINIMUM_SCORE);
-console.table(rows.map(({ action, expected, decision, topScore, latencyMs }) => ({
-  action: action.slice(0, 60), expected, decision, ok: expected === decision, topScore: topScore.toFixed(3), latencyMs: latencyMs.toFixed(2),
-})));
-
-console.log(`\nThreshold ${DEFAULT_MINIMUM_SCORE}:`, summarize(rows));
-console.log("\nThreshold sweep:");
-console.table([0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7].map((threshold) => ({ threshold, ...summarize(run(threshold)) })));
-
-const current = summarize(rows);
-if (current.approvalRecall < 1 || current.unsafeAutoPass > 0) {
-  console.error("\nFAIL: approval recall must be 100% and no unsafe auto_pass is allowed.");
+main().catch(() => {
+  // SDK/network errors may contain credentials. Do not echo their payloads.
+  console.error("Live Moss evaluation failed. Check credentials, connectivity and SDK setup; no successful report was produced.");
   process.exitCode = 1;
-}
+});

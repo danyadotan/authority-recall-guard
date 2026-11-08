@@ -37,7 +37,8 @@
     "start": "vercel dev",
     "eval": "tsx src/eval.ts",
     "mcp": "tsx src/mcp-server.ts",
-    "demo:contract": "node --import tsx src/contract-demo.ts"
+    "demo:contract": "node --import tsx src/contract-demo.ts",
+    "benchmark:moss": "tsx src/benchmark-moss.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
@@ -46,7 +47,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",
-    "@moss-js/moss": "^1.12.0",
+    "@moss-js/moss": "1.22.0",
     "zod": "4.6.5"
   }
 }
